@@ -199,15 +199,7 @@ const Index = () => {
           </Card>
 
           {/* Summary + QR Generator */}
-          <Card className="bg-slate-900">
-            <CardHeader>
-              <CardTitle>Today's Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-slate-300">
-              {/* Summary goes here... */}
-              <QRCodeGenerator />
-            </CardContent>
-          </Card>
+        
         </div>
 
         {/* Attendance Table */}
