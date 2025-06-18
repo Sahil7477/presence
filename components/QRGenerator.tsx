@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { QRCodeSVG } from "qrcode.react"
-import { Download, Trash2, Plus, Settings } from "lucide-react"
-import { v4 as uuidv4 } from "uuid"
+import { useState, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import { Download, Trash2, Plus, Settings } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -18,72 +18,56 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
-
-import { Toaster} from "@/components/ui/toaster"
-
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 // Types
 interface QRCode {
-  id: string
-  content: string
-  name: string
-  createdAt: Date
-  backgroundColor: string
-  foregroundColor: string
-  includeMargin: boolean
-  size: number
+  id: string;
+  content: string;
+  name: string;
+  createdAt: Date;
+  backgroundColor: string;
+  foregroundColor: string;
+  includeMargin: boolean;
+  size: number;
 }
 
 export default function QRCodeGenerator() {
-  // State for form
-  const [content, setContent] = useState<string>("")
-  const [name, setName] = useState<string>("")
-  const [backgroundColor, setBackgroundColor] = useState<string>("#FFFFFF")
-  const [foregroundColor, setForegroundColor] = useState<string>("#000000")
-  const [includeMargin, setIncludeMargin] = useState<boolean>(true)
-  const [size, setSize] = useState<number>(128)
+  const [content, setContent] = useState("");
+  const [name, setName] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("#FFFFFF");
+  const [foregroundColor, setForegroundColor] = useState("#000000");
+  const [includeMargin, setIncludeMargin] = useState(true);
+  const [size, setSize] = useState(128);
 
-  // State for QR codes
-  const [qrCodes, setQrCodes] = useState<QRCode[]>([])
-  const [selectedQR, setSelectedQR] = useState<QRCode | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
+  const [qrCodes, setQrCodes] = useState<QRCode[]>([]);
+  const [selectedQR, setSelectedQR] = useState<QRCode | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Load saved QR codes from localStorage on component mount
   useEffect(() => {
-    const savedQRCodes = localStorage.getItem("qrCodes")
-    if (savedQRCodes) {
+    const saved = localStorage.getItem("qrCodes");
+    if (saved) {
       try {
-        const parsedQRCodes = JSON.parse(savedQRCodes)
-        // Convert string dates back to Date objects
-        const formattedQRCodes = parsedQRCodes.map((qr: any) => ({
+        const parsed = JSON.parse(saved);
+        const formatted = parsed.map((qr: any) => ({
           ...qr,
           createdAt: new Date(qr.createdAt),
-        }))
-        setQrCodes(formattedQRCodes)
+        }));
+        setQrCodes(formatted);
       } catch (error) {
-        console.error("Error parsing saved QR codes:", error)
+        console.error("Error parsing saved QR codes:", error);
       }
     }
-  }, [])
+  }, []);
 
-  // Save QR codes to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("qrCodes", JSON.stringify(qrCodes))
-  }, [qrCodes])
+    localStorage.setItem("qrCodes", JSON.stringify(qrCodes));
+  }, [qrCodes]);
 
-  // Generate QR code
   const generateQRCode = () => {
-    if (!content) {
-      toast({
-        title: "Error",
-        description: "Please enter content for the QR code",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!content) return;
 
     const newQRCode: QRCode = {
       id: uuidv4(),
@@ -94,48 +78,36 @@ export default function QRCodeGenerator() {
       foregroundColor,
       includeMargin,
       size,
-    }
+    };
 
-    setQrCodes([newQRCode, ...qrCodes])
-    setSelectedQR(newQRCode)
+    setQrCodes([newQRCode, ...qrCodes]);
+    setSelectedQR(newQRCode);
+  };
 
-    toast({
-      title: "Success",
-      description: "QR code generated successfully",
-    })
-  }
+  const downloadQRCode = (qr: QRCode) => {
+    const svg = document.getElementById(`qr-svg-${qr.id}`);
+    if (!svg) return;
 
-  // Download QR code as SVG
-  const downloadQRCode = (qrCode: QRCode) => {
-    const svg = document.getElementById(`qr-svg-${qrCode.id}`)
-    if (!svg) return
+    const data = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
 
-    const svgData = new XMLSerializer().serializeToString(svg)
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" })
-    const svgUrl = URL.createObjectURL(svgBlob)
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${qr.name.replace(/\s+/g, "-")}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
-    const downloadLink = document.createElement("a")
-    downloadLink.href = svgUrl
-    downloadLink.download = `${qrCode.name.replace(/\s+/g, "-")}.svg`
-    document.body.appendChild(downloadLink)
-    downloadLink.click()
-    document.body.removeChild(downloadLink)
-    URL.revokeObjectURL(svgUrl)
-  }
-
-  // Delete QR code
   const deleteQRCode = (id: string) => {
-    setQrCodes(qrCodes.filter((qr) => qr.id !== id))
+    setQrCodes(qrCodes.filter((qr) => qr.id !== id));
     if (selectedQR?.id === id) {
-      setSelectedQR(null)
+      setSelectedQR(null);
     }
-    toast({
-      title: "Deleted",
-      description: "QR code deleted successfully",
-    })
-  }
+  };
 
-  // Format date
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -143,8 +115,8 @@ export default function QRCodeGenerator() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -161,7 +133,6 @@ export default function QRCodeGenerator() {
 
         <TabsContent value="generate" className="space-y-8">
           <div className="grid md:grid-cols-2 gap-8">
-            {/* QR Code Form */}
             <Card>
               <CardHeader>
                 <CardTitle>Create New QR Code</CardTitle>
@@ -199,36 +170,30 @@ export default function QRCodeGenerator() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="fgColor">Foreground Color</Label>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 border rounded" style={{ backgroundColor: foregroundColor }} />
-                        <Input
-                          id="fgColor"
-                          type="color"
-                          value={foregroundColor}
-                          onChange={(e) => setForegroundColor(e.target.value)}
-                          className="w-full h-8"
-                        />
-                      </div>
+                      <Input
+                        id="fgColor"
+                        type="color"
+                        value={foregroundColor}
+                        onChange={(e) => setForegroundColor(e.target.value)}
+                        className="w-full h-8"
+                      />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="bgColor">Background Color</Label>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 border rounded" style={{ backgroundColor: backgroundColor }} />
-                        <Input
-                          id="bgColor"
-                          type="color"
-                          value={backgroundColor}
-                          onChange={(e) => setBackgroundColor(e.target.value)}
-                          className="w-full h-8"
-                        />
-                      </div>
+                      <Input
+                        id="bgColor"
+                        type="color"
+                        value={backgroundColor}
+                        onChange={(e) => setBackgroundColor(e.target.value)}
+                        className="w-full h-8"
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="size">Size</Label>
-                    <Select value={size.toString()} onValueChange={(value) => setSize(Number.parseInt(value))}>
+                    <Select value={size.toString()} onValueChange={(v) => setSize(parseInt(v))}>
                       <SelectTrigger id="size">
                         <SelectValue placeholder="Select size" />
                       </SelectTrigger>
@@ -254,7 +219,6 @@ export default function QRCodeGenerator() {
               </CardFooter>
             </Card>
 
-            {/* QR Code Preview */}
             <Card>
               <CardHeader>
                 <CardTitle>QR Code Preview</CardTitle>
@@ -325,8 +289,8 @@ export default function QRCodeGenerator() {
                         <div
                           className="bg-white p-2 rounded cursor-pointer"
                           onClick={() => {
-                            setSelectedQR(qr)
-                            setIsDialogOpen(true)
+                            setSelectedQR(qr);
+                            setIsDialogOpen(true);
                           }}
                         >
                           <QRCodeSVG
@@ -344,14 +308,10 @@ export default function QRCodeGenerator() {
                         <Button variant="outline" size="sm" onClick={() => downloadQRCode(qr)}>
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedQR(qr)
-                            setIsDialogOpen(true)
-                          }}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => {
+                          setSelectedQR(qr);
+                          setIsDialogOpen(true);
+                        }}>
                           View
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => deleteQRCode(qr.id)}>
@@ -375,12 +335,13 @@ export default function QRCodeGenerator() {
         </TabsContent>
       </Tabs>
 
-      {/* QR Code Detail Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{selectedQR?.name}</DialogTitle>
-            <DialogDescription>Created on {selectedQR && formatDate(selectedQR.createdAt)}</DialogDescription>
+            <DialogDescription>
+              Created on {selectedQR && formatDate(selectedQR.createdAt)}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col items-center py-4">
@@ -400,7 +361,6 @@ export default function QRCodeGenerator() {
                 <div className="w-full">
                   <h4 className="text-sm font-medium mb-1">Content:</h4>
                   <p className="text-sm text-muted-foreground mb-4 break-all">{selectedQR.content}</p>
-
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <h4 className="text-sm font-medium mb-1">Colors:</h4>
@@ -433,12 +393,7 @@ export default function QRCodeGenerator() {
           </div>
 
           <DialogFooter className="flex sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                if (selectedQR) downloadQRCode(selectedQR)
-              }}
-            >
+            <Button variant="outline" onClick={() => selectedQR && downloadQRCode(selectedQR)}>
               <Download className="mr-2 h-4 w-4" />
               Download
             </Button>
@@ -446,8 +401,8 @@ export default function QRCodeGenerator() {
               variant="destructive"
               onClick={() => {
                 if (selectedQR) {
-                  deleteQRCode(selectedQR.id)
-                  setIsDialogOpen(false)
+                  deleteQRCode(selectedQR.id);
+                  setIsDialogOpen(false);
                 }
               }}
             >
@@ -457,8 +412,6 @@ export default function QRCodeGenerator() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Toaster />
     </div>
-  )
+  );
 }
