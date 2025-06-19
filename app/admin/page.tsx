@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import {
   Clock, Users, Check, X, Search
 } from "lucide-react"
@@ -26,8 +26,10 @@ import {
 import AddStudentForm from '@/components/addStudentForm'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { useRouter } from 'next/navigation'
 
 export default function Index() {
+  const router = useRouter()
   const [students, setStudents] = useState<any[]>([])
   const [attendanceChartData, setAttendanceChartData] = useState<any[]>([])
 
@@ -102,7 +104,7 @@ export default function Index() {
           <div className="h-8 w-8 rounded-md bg-indigo-600 flex items-center justify-center">
             <Clock className="h-5 w-5 text-white" />
           </div>
-          <h1 className="font-bold text-xl">AttendEase</h1>
+          <h1 className="font-bold text-xl">Presence</h1>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">
@@ -122,6 +124,14 @@ export default function Index() {
           <p className="text-slate-400">Monitor daily attendance and student status</p>
         </header>
 
+        {/* Link to QR Generator */}
+        <div className="flex justify-end mb-4">
+          <Button onClick={() => router.push('/qr-generator')} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+            Go to QR Generator
+          </Button>
+        </div>
+
+        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {["Total", "Present", "Late", "Absent"].map((label, i) => {
             const iconMap = [
@@ -154,6 +164,7 @@ export default function Index() {
           })}
         </div>
 
+        {/* Attendance Chart */}
         <Card className="bg-slate-900 mb-6">
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -185,8 +196,10 @@ export default function Index() {
           </CardContent>
         </Card>
 
+        {/* Add Student Form */}
         <AddStudentForm onAddStudent={handleAddStudent} />
 
+        {/* Student Table */}
         {students.length > 0 && (
           <Card className="mt-6 bg-slate-900 text-white">
             <CardHeader>
