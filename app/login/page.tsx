@@ -5,9 +5,15 @@ import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+
   const handleLogin = (role: 'admin' | 'student') => {
-    router.push(`/${role}`);
+    if (role === 'admin') {
+      router.push('/admin-auth'); // Admin login/signup page
+    } else {
+      router.push('/student-auth'); // 👈 Student login/signup page
+    }
   };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen space-y-6">
       <h1 className="text-3xl font-bold">Login Page</h1>

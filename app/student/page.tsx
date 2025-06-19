@@ -56,7 +56,7 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-white">
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Student Dashboard</h1>
@@ -77,7 +77,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* QR Scanner */}
-        <Card className="bg-slate-900 border-slate-700">
+        <Card className="bg-white-900 ">
           <CardHeader>
             <CardTitle className="text-white">Mark Attendance</CardTitle>
             <CardDescription className="text-slate-400">Scan the QR code to mark your attendance</CardDescription>
